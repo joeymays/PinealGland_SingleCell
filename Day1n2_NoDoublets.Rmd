@@ -1,7 +1,6 @@
 ---
 title: "Pineal Gland Experiment 2 - Day"
 author: "Joseph Mays"
-date: "May 16, 2018"
 output:
   html_notebook: 
       toc: true
@@ -14,11 +13,11 @@ output:
   pdf_document: default
 ---
 
-Two Day Samples, 10X Genomics 3'; Seurat v2
+Two Day Samples, 10X Genomics 3'; Seurat v2.0.0
 
 # Setup
 ## Merge Original Seurat Objects
-```{r Pineal2_Day1n2 Merge, message=FALSE, results='hide'}
+```{r Pineal2_Day1n2 Merge, message=FALSE, warning=FALSE, results='hide'}
 Pineal2_Day1n2 <- MergeSeurat(Pineal2_Day1, Pineal2_Day2, project = "Pineal2_Day1n2", add.cell.id1 = "D1", add.cell.id2 = "D2")
 #Doublets previously identified are removed here 
 load("./master.doublets.day.Robj")
@@ -37,8 +36,8 @@ VlnPlot(Pineal2_Day1n2, c("nUMI","nGene","percent.mito"),nCol=3, group.by = "ori
 ## Identify Highly Variable Genes
 ```{r Find Variable Genes, message=FALSE, results='hide'}
 Pineal2_Day1n2 <- FindVariableGenes(Pineal2_Day1n2, x.low.cutoff = 0.0125, x.high.cutoff = 3, y.cutoff = 0.3, do.plot = F)
+print(paste(length(Pineal2_Day1n2@var.genes), " variable genes selected.", sep=""))
 ```
-`r length(Pineal2_Day1n2@var.genes)` variable genes were identified.
 
 ## Principal Components Analysis 
 ```{r PCA I, message=FALSE, warning=FALSE}
@@ -89,7 +88,7 @@ TSNEPlot(Pineal2_Day1n2, do.label = T, do.return = T)
 ```
 
 # Dimensional Reduction - Non-Pinealocytes
-Non-Pinealocytes were analyized separately to resolve cell subtypes
+Non-Pinealocytes were analyized separately to resolve cell subtypes.
 ```{r Non-Pinealocyte}
 Pineal2_Day1n2 <- StashIdent(Pineal2_Day1n2, "major.types")
 Pineal2_Day1n2_NonP <- SubsetData(Pineal2_Day1n2, ident.remove = c("Tph1", "High_Asmt_Tph1"))
@@ -98,8 +97,8 @@ TSNEPlot(Pineal2_Day1n2_NonP, do.label = T, do.return = T)
 ## Identify Highly Variable Genes
 ```{r Find Variable Genes II, message=FALSE, results='hide'}
 Pineal2_Day1n2_NonP <- FindVariableGenes(Pineal2_Day1n2_NonP, x.low.cutoff = 0.05, x.high.cutoff = 3, y.cutoff = 0.4, do.plot = F)
+print(paste(length(Pineal2_Day1n2_NonP@var.genes), " variable genes selected.", sep=""))
 ```
-`r length(Pineal2_Day1n2_NonP@var.genes)` variable genes were identified.
 
 ## Principal Components Analysis
 ```{r PCA II, message=FALSE, warning=FALSE}
@@ -161,3 +160,8 @@ Pineal2_Day1n2 <- SetIdent(Pineal2_Day1n2, cells.use = WhichCells(Pineal2_Day1n2
 Pineal2_Day1n2@ident = factor(Pineal2_Day1n2@ident,levels(Pineal2_Day1n2@ident)[c(2,8,4,5,6,1,7,3,9)])
 TSNEPlot(Pineal2_Day1n2, do.label = T, do.return = T)
 ```
+
+```{r}
+sessionInfo()
+```
+
