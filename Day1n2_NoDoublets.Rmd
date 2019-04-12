@@ -13,7 +13,7 @@ output:
   pdf_document: default
 ---
 
-Two Day Samples, 10X Genomics 3'; Seurat v2.0.0
+Two Day Samples, 10X Genomics 3'; Seurat v2.2.0
 
 # Setup
 ## Merge Original Seurat Objects
