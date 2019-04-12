@@ -1,5 +1,5 @@
 ---
-title: "PinealGland Sample Day_2 Seurat_2.3.4"
+title: "PinealGland Sample Day_2 Seurat_2.2.0"
 author: "Joseph Mays"
 output:
   html_notebook: default

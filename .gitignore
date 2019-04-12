@@ -4,3 +4,5 @@ OriginalReferenceRawMatrix/
 OriginalReferenceFilteredMatrix/
 
 *.html
+
+\.Rhistory
