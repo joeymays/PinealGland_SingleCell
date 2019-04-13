@@ -51,13 +51,13 @@ print(paste(length(Pineal2_Day1@var.genes), " variable genes selected.", sep="")
 Pineal2_Day1 <- ScaleData(Pineal2_Day1, display.progress = F)
 ```
 
-```{r PCA I, message=FALSE, warning=FALSE, include=FALSE}
+```{r PCA I, echo=FALSE, message=FALSE, warning=FALSE}
 Pineal2_Day1 <- RunPCA(Pineal2_Day1, pc.genes = Pineal2_Day1@var.genes, pcs.compute = 40, do.print = F)
 Pineal2_Day1 <- ProjectPCA(Pineal2_Day1, do.print = F)
 ```
 ```{r PCA Plot I, echo=TRUE, message=FALSE, warning=FALSE}
 PCAPlot(Pineal2_Day1, no.legend = T)
-PCElbowPlot(Pineal2_Day1, num.pc = 50)
+PCElbowPlot(Pineal2_Day1, num.pc = 40)
 PCHeatmap(Pineal2_Day1, pc.use = 1:6, cells.use = 200, num.genes = 25, do.balanced = F)
 PCHeatmap(Pineal2_Day1, pc.use = 7:12, cells.use = 150, num.genes = 25, do.balanced = T)
 PCHeatmap(Pineal2_Day1, pc.use = 13:18, cells.use = 150, num.genes = 25, do.balanced = T)

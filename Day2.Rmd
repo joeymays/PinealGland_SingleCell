@@ -54,7 +54,7 @@ Pineal2_Day2 <- ProjectPCA(Pineal2_Day2, do.print = F)
 ```
 ```{r PCA Plot I, echo=TRUE, message=FALSE, warning=FALSE}
 PCAPlot(Pineal2_Day2, no.legend = T)
-PCElbowPlot(Pineal2_Day2, num.pc = 50)
+PCElbowPlot(Pineal2_Day2, num.pc = 40)
 PCHeatmap(Pineal2_Day2, pc.use = 1:6, cells.use = 200, num.genes = 25, do.balanced = F)
 PCHeatmap(Pineal2_Day2, pc.use = 7:12, cells.use = 200, num.genes = 25, do.balanced = F)
 ```

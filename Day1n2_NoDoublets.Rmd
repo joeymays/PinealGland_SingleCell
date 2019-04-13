@@ -160,3 +160,7 @@ Pineal2_Day1n2 <- SetIdent(Pineal2_Day1n2, cells.use = WhichCells(Pineal2_Day1n2
 Pineal2_Day1n2@ident = factor(Pineal2_Day1n2@ident,levels(Pineal2_Day1n2@ident)[c(2,8,4,5,6,1,7,3,9)])
 TSNEPlot(Pineal2_Day1n2, do.label = T, do.return = T)
 ```
+
+```{r}
+sessionInfo()
+```
