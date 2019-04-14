@@ -46,5 +46,6 @@ These scripts were used to generate the figures for the paper.
 ```
 ./Scripts/Figure_01.R
 ./Scripts/Figure_03.R
+./Scripts/Figure_04.R
 ```
 

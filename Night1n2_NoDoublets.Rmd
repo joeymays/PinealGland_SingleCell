@@ -20,7 +20,7 @@ Two Night Samples, 10X Genomics 3'; Seurat v2.2.0
 ```{r Pineal2_Night1n2 Merge, echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
 Pineal2_Night1n2 <- MergeSeurat(Pineal2_Night1, Pineal2_Night2, project = "Pineal2_Night1n2", add.cell.id1 = "N1", add.cell.id2 = "N2")
 #Doublets previously identified are removed here 
-load("./master.doublets.night.Robj")
+load("./R_Objects/master.doublets.night.Robj")
 Pineal2_Night1n2@meta.data$treatment <- "Night"
 Pineal2_Night1n2 <- SubsetData(Pineal2_Night1n2, cells.use = setdiff(colnames(Pineal2_Night1n2@data),master.doublets.night))
 Pineal2_Night1n2 <- ScaleData(Pineal2_Night1n2, display.progress = F)
@@ -84,7 +84,7 @@ Pineal2_Night1n2 <- RenameIdent(Pineal2_Night1n2, old.ident.name = 2, new.ident.
 Pineal2_Night1n2 <- RenameIdent(Pineal2_Night1n2, old.ident.name = 1, new.ident.name = "RT1-Bb")
 Pineal2_Night1n2 <- RenameIdent(Pineal2_Night1n2, old.ident.name = 7, new.ident.name = "High_Asmt_Tph1")
 #Vwf+ cells isolated manually from the Lum+ group
-load("./Vwf.Night.Robj")
+load("./R_Objects/Vwf.Night.Robj")
 Pineal2_Night1n2 <- SetIdent(Pineal2_Night1n2, cells.use = Vwf.Night, ident.use = "Vwf")
 Pineal2_Night1n2 <- MergeNode(Pineal2_Night1n2, 26)
 Pineal2_Night1n2 <- RenameIdent(Pineal2_Night1n2, old.ident.name = 10, new.ident.name = "Tph1")
