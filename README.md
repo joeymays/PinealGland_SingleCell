@@ -39,7 +39,7 @@ The `3PrimeExtensionCorrection.R` script applies corrected count values to the S
 
 ## Figures
 
-These scripts were used to generated the figures for the paper.
+These scripts were used to generate the figures for the paper.
 
 ```
 ./Scripts/Figure_01.R
