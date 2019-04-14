@@ -12,10 +12,12 @@ Mays JC, Kelly MC, Coon SL, Holtzclaw L, Rath MF, et al. (2018) Single-cell RNA 
 Single-Cell RNA-Seq analysis was performed using [Seurat](github.com/satijalab/seurat) v2.2.0. 
 Code should be run in the follow order:
 ## Setup
-`SetupDependencies.R` loads libraries, `MetadataInit.R` loads a helper function used in later scripts.
-```
+`SetupDependencies.R` loads libraries, `MetadataInit.R` and `GenerateMarkerReport.R` load helper functions used in subsequent scripts.
+
+```markdown
 ./Scripts/SetupDependencies.R
-./Scripts/MetadataInit.R 
+./Scripts/MetadataInit.R
+./Scripts/GenerateMarkerReport.R
 ```
 ## Single Samples
 These R Notebooks contain the analysis code for each individual sample.
