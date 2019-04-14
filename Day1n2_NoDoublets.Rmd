@@ -20,7 +20,7 @@ Two Day Samples, 10X Genomics 3'; Seurat v2.2.0
 ```{r Pineal2_Day1n2 Merge, message=FALSE, warning=FALSE, results='hide'}
 Pineal2_Day1n2 <- MergeSeurat(Pineal2_Day1, Pineal2_Day2, project = "Pineal2_Day1n2", add.cell.id1 = "D1", add.cell.id2 = "D2")
 #Doublets previously identified are removed here 
-load("./master.doublets.day.Robj")
+load("./R_Objects/master.doublets.day.Robj")
 Pineal2_Day1n2@meta.data$treatment <- "Day"
 Pineal2_Day1n2 <- SubsetData(Pineal2_Day1n2, cells.use = setdiff(colnames(Pineal2_Day1n2@data), master.doublets.day))
 Pineal2_Day1n2 <- ScaleData(Pineal2_Day1n2, display.progress = F)
@@ -147,7 +147,7 @@ Pineal2_Day1n2_NonP <- RenameIdent(Pineal2_Day1n2_NonP, old.ident.name = 5, new.
 Pineal2_Day1n2_NonP <- RenameIdent(Pineal2_Day1n2_NonP, old.ident.name = 3, new.ident.name = "Penk 3")
 Pineal2_Day1n2_NonP <- RenameIdent(Pineal2_Day1n2_NonP, old.ident.name = 6, new.ident.name = "Penk 1")
 #Vwf+ cells isolated manually from the Lum+ group
-load("./Vwf.Day.Robj")
+load("./R_Objects/Vwf.Day.Robj")
 Pineal2_Day1n2_NonP <- SetIdent(Pineal2_Day1n2_NonP, cells.use = Vwf.Day, ident.use = "Vwf")
 TSNEPlot(Pineal2_Day1n2_NonP, do.label = T, do.return = T)
 ```
