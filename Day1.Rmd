@@ -1,5 +1,5 @@
 ---
-title: "PinealGland Sample Day_1 Seurat_2.2.0"
+title: "PinealGland Sample Day_1 Seurat_3.0.0"
 author: "Joseph Mays"
 output:
   html_notebook: default
@@ -40,55 +40,52 @@ VlnPlot(Pineal2_Day1, features = c("nCount_RNA","nFeature_RNA","percent.mito"), 
 ```
 
 ```{r Log Normalize}
-Pineal2_Day1 <- NormalizeData(Pineal2_Day1, scale.factor = 1e4, display.progress = F)
+Pineal2_Day1 <- NormalizeData(Pineal2_Day1, scale.factor = 1e4, verbose = F, normalization.method = "LogNormalize")
 ```
 
 ```{r Find Variable Genes, echo=TRUE}
-Pineal2_Day1 <- FindVariableGenes(Pineal2_Day1, x.low.cutoff = 0.0125, x.high.cutoff = 3, y.cutoff = 0.3, do.plot = F)
-
-Pineal2_Day1 <- FindVariableFeatures(Pineal2_Day1, selection.method = "mean.var.plot", x.low.cutoff = 0.0125, x.high.cutoff = 3, y.cutoff = 0.3, do.plot = F)
-
-
-print(paste(length(Pineal2_Day1@var.genes), " variable genes selected.", sep=""))
+Pineal2_Day1 <- FindVariableFeatures(Pineal2_Day1, selection.method = "mean.var.plot", mean.cutoff = c(0.0125,3), dispersion.cutoff = c(0.3,Inf), verbose = F, do.plot=F)
+print(paste(length(VariableFeatures(Pineal2_Day1)), " variable genes selected.", sep=""))
 ```
 
 ```{r Scale/Regress}
-Pineal2_Day1 <- ScaleData(Pineal2_Day1, display.progress = F)
+Pineal2_Day1 <- ScaleData(Pineal2_Day1,verbose = F)
 ```
 
 ```{r PCA I, echo=FALSE, message=FALSE, warning=FALSE}
-Pineal2_Day1 <- RunPCA(Pineal2_Day1, pc.genes = Pineal2_Day1@var.genes, pcs.compute = 40, do.print = F)
-Pineal2_Day1 <- ProjectPCA(Pineal2_Day1, do.print = F)
+Pineal2_Day1 <- RunPCA(Pineal2_Day1, npcs = 40, verbose = F)
+Pineal2_Day1 <- ProjectDim(Pineal2_Day1, verbose = F)
 ```
 ```{r PCA Plot I, echo=TRUE, message=FALSE, warning=FALSE}
 PCAPlot(Pineal2_Day1, no.legend = T)
-PCElbowPlot(Pineal2_Day1, num.pc = 40)
-PCHeatmap(Pineal2_Day1, pc.use = 1:6, cells.use = 200, num.genes = 25, do.balanced = F)
-PCHeatmap(Pineal2_Day1, pc.use = 7:12, cells.use = 150, num.genes = 25, do.balanced = T)
-PCHeatmap(Pineal2_Day1, pc.use = 13:18, cells.use = 150, num.genes = 25, do.balanced = T)
+ElbowPlot(Pineal2_Day1, ndims = 40)
+DimHeatmap(Pineal2_Day1, dims = 1:6)
+DimHeatmap(Pineal2_Day1, dims = 7:12, balanced = T)
+DimHeatmap(Pineal2_Day1, dims = 13:18, balanced = T)
 ```
 PCs selected for generating TSNE plot. Number of PCs and resolution parameters will be refined after combining samples.
 ```{r Clustering, echo=TRUE, message=FALSE, warning=FALSE}
-Pineal2_Day1 <- FindClusters(Pineal2_Day1, dims.use = 1:16, reduction.type = "pca", resolution = 1.5, print.output = F, save.SNN = T)
+Pineal2_Day1 <- FindNeighbors(Pineal2_Day1, dims = 1:16, reduction = "pca", do.plot = T)
+Pineal2_Day1 <- FindClusters(Pineal2_Day1, resolution = 1.5, verbose = F)
 ```
 
 ```{r Generate TSNE, echo=TRUE, message=FALSE, warning=FALSE}
-Pineal2_Day1 <- RunTSNE(Pineal2_Day1, dims.use = 1:16, do.fast = T)
+Pineal2_Day1 <- RunTSNE(Pineal2_Day1, dims = 1:16)
 ```
 
 ```{r Plot TSNE, echo=TRUE, message=FALSE, warning=FALSE}
-Pineal2_Day1 <- BuildClusterTree(Pineal2_Day1, genes.use = Pineal2_Day1@var.genes, do.plot = T, do.reorder = T, reorder.numeric = T)
+Pineal2_Day1 <- BuildClusterTree(Pineal2_Day1, reorder = T, reorder.numeric = T)
+PlotClusterTree(Pineal2_Day1)
 TSNEPlot(Pineal2_Day1, do.label = T, do.return = T) + ggtitle("PCs 1-16, 1.5 res")
-FeaturePlot(Pineal2_Day1, "nUMI", cols.use = c("light grey","red"))
-FeaturePlot(Pineal2_Day1, "nGene", cols.use = c("light grey","red"))
+FeaturePlot(Pineal2_Day1, "nCount_RNA", cols = c("light grey","red"))
+FeaturePlot(Pineal2_Day1, "nFeature_RNA", cols = c("light grey","red"))
 ```
 
 ```{r Markers}
-FeaturePlot(Pineal2_Day1, c("Tph1","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb"), cols.use=c("light grey","red"))
-DotPlot(object = Pineal2_Day1, genes.plot = c("Tph1","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb"))
+FeaturePlot(Pineal2_Day1, c("Tph1","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb"), cols=c("light grey","red"))
+DotPlot(object = Pineal2_Day1, features = c("Tph1","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb")) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ```{r}
 sessionInfo()
 ```
-
