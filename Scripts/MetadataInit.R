@@ -8,11 +8,11 @@
 MetadataInit <- function(SeuratObject, ID.prefix){
   
   # Save Cell IDs to MetaData Slot
-  barcodes <- colnames(SeuratObject@raw.data)
+  barcodes <- colnames(GetAssayData(SeuratObject, assay = "RNA", slot = "counts"))
   SeuratObject@meta.data[,"barcode"] <- barcodes
   
   cell.ids = c()
-  for(i in 1:length(colnames(SeuratObject@raw.data))){
+  for(i in 1:length(colnames(GetAssayData(SeuratObject, assay = "RNA", slot = "counts")))){
     cell.id.current <- paste(ID.prefix, i, sep = '_')
     cell.ids <- c(cell.ids, cell.id.current)
   }  

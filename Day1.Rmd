@@ -12,30 +12,31 @@ Dependencies loaded using SetupDependencies.R script.
 Import Filtered Barcodes from CellRanger. Filter out cells with less than 800 genes and genes represented in less than 3 cells.
 ```{r Pineal2_Day1 Import, echo=TRUE, message=FALSE, warning=FALSE}
 Pineal2_Day1.matrix <- Read10X(data.dir = "./OriginalReferenceFilteredMatrix/Day1/")
-Pineal2_Day1 <- CreateSeuratObject(Pineal2_Day1.matrix, project = "Pineal2_Day1", min.cells = 3, min.genes = 800)
+Pineal2_Day1 <- CreateSeuratObject(counts = Pineal2_Day1.matrix, project = "Pineal2_Day1", min.cells = 3, min.features = 800)
 ```
 
 ```{r}
-print(paste(dim(Pineal2_Day1.matrix)[2] - dim(Pineal2_Day1@raw.data)[2], " cells were filtered from the original matrix.", sep=''))
+print(paste(dim(Pineal2_Day1.matrix)[2] - dim(GetAssayData(Pineal2_Day1, slot = "counts"))[2], " cells were filtered from the original matrix.", sep=''))
 ```
 
 Calculate percent expression of mitochondrial genes, output QC plots. 
 ```{r QC stats}
 # The MetadataInit function adds barcode and arbitrary cell ID columns to the metadata table in the Seurat Object 
 Pineal2_Day1 <- MetadataInit(Pineal2_Day1, ID.prefix = "Day1")
-Pineal2_Day1.mito.genes <- grep("^Mt-", rownames(Pineal2_Day1@data), value = T)
-Pineal2_Day1.percent.mito <- Matrix::colSums(Pineal2_Day1@raw.data[Pineal2_Day1.mito.genes, ])/Matrix::colSums(Pineal2_Day1@raw.data)
-Pineal2_Day1 <- AddMetaData(Pineal2_Day1, Pineal2_Day1.percent.mito, "percent.mito")
-GenePlot(Pineal2_Day1, "nUMI","nGene")
-VlnPlot(Pineal2_Day1, c("nUMI","nGene","percent.mito"),nCol=3, group.by = "orig.ident")
+Pineal2_Day1.mito.genes <- grep("^Mt-", rownames(Pineal2_Day1), value = T)
+Pineal2_Day1.percent.mito <- Matrix::colSums(GetAssayData(Pineal2_Day1, slot = "counts", assay = "RNA")[Pineal2_Day1.mito.genes, ])/Matrix::colSums(GetAssayData(Pineal2_Day1, slot = "counts", assay = "RNA"))
+Pineal2_Day1$percent.mito <- Pineal2_Day1.percent.mito
+FeatureScatter(Pineal2_Day1, "nCount_RNA","nFeature_RNA")
+VlnPlot(Pineal2_Day1, features = c("nCount_RNA","nFeature_RNA","percent.mito"), ncol=3, group.by = "orig.ident", pt.size = 0)
 ```
 
 Filter cells, cutoffs based on QC plots. 
 ```{r Filter by nGene/nUMI, results="hold"}
-GenePlot(Pineal2_Day1, "nUMI", "nGene")
-Pineal2_Day1 <- FilterCells(Pineal2_Day1, subset.names = "nUMI", high.thresholds = 25000)
-GenePlot(Pineal2_Day1, "nUMI","nGene")
-VlnPlot(Pineal2_Day1, c("nUMI","nGene","percent.mito"),nCol=3)
+FeatureScatter(Pineal2_Day1, "nCount_RNA","nFeature_RNA")
+Pineal2_Day1 <- SubsetData(Pineal2_Day1, subset.names = "nCount_RNA", high.thresholds = 25000)
+Pineal2_Day1 <- subset(Pineal2_Day1, subset = nCount_RNA < 25000)
+FeatureScatter(Pineal2_Day1, "nCount_RNA","nFeature_RNA")
+VlnPlot(Pineal2_Day1, features = c("nCount_RNA","nFeature_RNA","percent.mito"), ncol=3, group.by = "orig.ident", pt.size = 0)
 ```
 
 ```{r Log Normalize}
@@ -44,6 +45,10 @@ Pineal2_Day1 <- NormalizeData(Pineal2_Day1, scale.factor = 1e4, display.progress
 
 ```{r Find Variable Genes, echo=TRUE}
 Pineal2_Day1 <- FindVariableGenes(Pineal2_Day1, x.low.cutoff = 0.0125, x.high.cutoff = 3, y.cutoff = 0.3, do.plot = F)
+
+Pineal2_Day1 <- FindVariableFeatures(Pineal2_Day1, selection.method = "mean.var.plot", x.low.cutoff = 0.0125, x.high.cutoff = 3, y.cutoff = 0.3, do.plot = F)
+
+
 print(paste(length(Pineal2_Day1@var.genes), " variable genes selected.", sep=""))
 ```
 
