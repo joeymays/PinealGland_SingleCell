@@ -1,5 +1,5 @@
 ---
-title: "PinealGland Sample Day_2 Seurat_2.2.0"
+title: "PinealGland Sample Day_2 Seurat_3.0.0"
 author: "Joseph Mays"
 output:
   html_notebook: default
@@ -10,77 +10,79 @@ output:
 Import Filtered Barcodes from CellRanger. Filter out cells with less than 800 genes and genes represented in less than 2 cells.
 ```{r Pineal2_Day2 Import, message=FALSE, warning=FALSE, results="hide"}
 Pineal2_Day2.matrix <- Read10X(data.dir = "./OriginalReferenceFilteredMatrix/Day2/")
-Pineal2_Day2 <- CreateSeuratObject(Pineal2_Day2.matrix, project = "Pineal2_Day2", min.cells = 3, min.genes = 800)
+Pineal2_Day2 <- CreateSeuratObject(Pineal2_Day2.matrix, project = "Pineal2_Day2", min.cells = 3, min.features = 800)
 ```
 
 ```{r}
-print(paste(dim(Pineal2_Day2.matrix)[2] - dim(Pineal2_Day2@raw.data)[2], " cells were filtered from the original matrix.", sep=''))
+print(paste(dim(Pineal2_Day2.matrix)[2] - dim(GetAssayData(Pineal2_Day2, slot = "counts"))[2], " cells were filtered from the original matrix.", sep=''))
 ```
 
 Calculate percent expression of mitochondrial genes, output QC plots. 
 ```{r QC stats}
 # The MetadataInit function adds barcode and arbitrary cell ID columns to the metadata table in the Seurat Object 
-Pineal2_Day2 <- MetadataInit(Pineal2_Day2, ID.prefix = "Day2")
-Pineal2_Day2.mito.genes <- grep("^Mt-", rownames(Pineal2_Day2@data), value = T)
-Pineal2_Day2.percent.mito <- Matrix::colSums(Pineal2_Day2@raw.data[Pineal2_Day2.mito.genes, ])/Matrix::colSums(Pineal2_Day2@raw.data)
-Pineal2_Day2 <- AddMetaData(Pineal2_Day2, Pineal2_Day2.percent.mito, "percent.mito")
-GenePlot(Pineal2_Day2, "nUMI","nGene")
-VlnPlot(Pineal2_Day2, c("nUMI","nGene","percent.mito"),nCol=3, group.by = "orig.ident")
+Pineal2_Day2 <- MetadataInit(Pineal2_Day2, ID.prefix = "Day1")
+Pineal2_Day2.mito.genes <- grep("^Mt-", rownames(Pineal2_Day2), value = T)
+Pineal2_Day2.percent.mito <- Matrix::colSums(GetAssayData(Pineal2_Day2, slot = "counts", assay = "RNA")[Pineal2_Day2.mito.genes, ])/Matrix::colSums(GetAssayData(Pineal2_Day2, slot = "counts", assay = "RNA"))
+Pineal2_Day2$percent.mito <- Pineal2_Day2.percent.mito
+FeatureScatter(Pineal2_Day2, "nCount_RNA","nFeature_RNA")
+VlnPlot(Pineal2_Day2, features = c("nCount_RNA","nFeature_RNA","percent.mito"), ncol=3, group.by = "orig.ident", pt.size = 0)
 ```
 Filter cells, cutoffs based on QC plots. 
 ```{r Filter by nGene/nUMI, results="hold"}
-GenePlot(Pineal2_Day2, "nUMI", "nGene")
-Pineal2_Day2 <- FilterCells(Pineal2_Day2, subset.names = "nUMI", high.thresholds = 35000)
-GenePlot(Pineal2_Day2, "nUMI","nGene")
-VlnPlot(Pineal2_Day2, c("nUMI","nGene","percent.mito"),nCol=3)
+FeatureScatter(Pineal2_Day2, "nCount_RNA","nFeature_RNA")
+Pineal2_Day2 <- subset(Pineal2_Day2, subset = nCount_RNA < 35000)
+FeatureScatter(Pineal2_Day2, "nCount_RNA","nFeature_RNA")
+VlnPlot(Pineal2_Day2, features = c("nCount_RNA","nFeature_RNA","percent.mito"), ncol=3, group.by = "orig.ident", pt.size = 0)
 ```
 
 ```{r Log Normalize}
-Pineal2_Day2 <- NormalizeData(Pineal2_Day2, scale.factor = 1e4, display.progress = F)
+Pineal2_Day2 <- NormalizeData(Pineal2_Day2, scale.factor = 1e4, verbose = F, normalization.method = "LogNormalize")
 ```
 
 ```{r Find Variable Genes, echo=TRUE}
-Pineal2_Day2 <- FindVariableGenes(Pineal2_Day2, x.low.cutoff = 0.0125, x.high.cutoff = 3, y.cutoff = 0.3, do.plot = F)
-print(paste(length(Pineal2_Day2@var.genes), " variable genes selected.", sep=""))
+Pineal2_Day2 <- FindVariableFeatures(Pineal2_Day2, selection.method = "mean.var.plot", mean.cutoff = c(0.0125,3), dispersion.cutoff = c(0.3,Inf), verbose = F, do.plot=F)
+print(paste(length(VariableFeatures(Pineal2_Day2)), " variable genes selected.", sep=""))
 ```
 
 ```{r Scale/Regress}
-Pineal2_Day2 <- ScaleData(Pineal2_Day2, display.progress = F)
+Pineal2_Day2 <- ScaleData(Pineal2_Day2,verbose = F)
 ```
 
 ```{r PCA I, echo=TRUE, message=FALSE, warning=FALSE}
-Pineal2_Day2 <- RunPCA(Pineal2_Day2, pc.genes = Pineal2_Day2@var.genes, pcs.compute = 40, do.print = F)
-Pineal2_Day2 <- ProjectPCA(Pineal2_Day2, do.print = F)
+Pineal2_Day2 <- RunPCA(Pineal2_Day2, npcs = 40, verbose = F)
+Pineal2_Day2 <- ProjectDim(Pineal2_Day2, verbose = F)
 ```
 ```{r PCA Plot I, echo=TRUE, message=FALSE, warning=FALSE}
 PCAPlot(Pineal2_Day2, no.legend = T)
-PCElbowPlot(Pineal2_Day2, num.pc = 40)
-PCHeatmap(Pineal2_Day2, pc.use = 1:6, cells.use = 200, num.genes = 25, do.balanced = F)
-PCHeatmap(Pineal2_Day2, pc.use = 7:12, cells.use = 200, num.genes = 25, do.balanced = F)
+ElbowPlot(Pineal2_Day2, ndims = 40)
+DimHeatmap(Pineal2_Day2, dims = 1:6)
+DimHeatmap(Pineal2_Day2, dims = 7:12, balanced = T)
+DimHeatmap(Pineal2_Day2, dims = 13:18, balanced = T)
 ```
 
 PCs selected for generating TSNE plot. Number of PCs and resolution parameters will be refined after combining samples.
 ```{r Clustering, echo=TRUE, message=FALSE, warning=FALSE}
-Pineal2_Day2 <- FindClusters(Pineal2_Day2, dims.use = 1:12, reduction.type = "pca", resolution = 1.5, print.output = F, save.SNN = T)
+Pineal2_Day2 <- FindNeighbors(Pineal2_Day2, dims = 1:12, reduction = "pca", do.plot = T)
+Pineal2_Day2 <- FindClusters(Pineal2_Day2, resolution = 1.5, verbose = F)
 ```
 
 ```{r Generate TSNE, echo=TRUE, message=FALSE, warning=FALSE}
-Pineal2_Day2 <- RunTSNE(Pineal2_Day2, dims.use = 1:12, do.fast = T)
+Pineal2_Day2 <- RunTSNE(Pineal2_Day2, dims = 1:12)
 ```
 
 ```{r Plot TSNE, echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
-Pineal2_Day2 <- BuildClusterTree(Pineal2_Day2, genes.use = Pineal2_Day2@var.genes, do.plot = T, do.reorder = T, reorder.numeric = T)
+Pineal2_Day2 <- BuildClusterTree(Pineal2_Day2, reorder = T, reorder.numeric = T)
+PlotClusterTree(Pineal2_Day2)
 TSNEPlot(Pineal2_Day2, do.label = T, do.return = T) + ggtitle("PCs 1-12, 1.5 res")
-FeaturePlot(Pineal2_Day2, "nUMI", cols.use = c("light grey","red"))
-FeaturePlot(Pineal2_Day2, "nGene", cols.use = c("light grey","red"))
+FeaturePlot(Pineal2_Day2, "nCount_RNA", cols = c("light grey","red"))
+FeaturePlot(Pineal2_Day2, "nFeature_RNA", cols = c("light grey","red"))
 ```
 
 ```{r Markers}
-FeaturePlot(Pineal2_Day2, c("Tph1","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb"), cols.use=c("light grey","red"))
-DotPlot(object = Pineal2_Day2, genes.plot = c("Tph1","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb"))
+FeaturePlot(Pineal2_Day2, c("Tph1","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb"), cols=c("light grey","red"))
+DotPlot(object = Pineal2_Day2, features = c("Tph1","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb")) + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ```{r}
 sessionInfo()
 ```
-

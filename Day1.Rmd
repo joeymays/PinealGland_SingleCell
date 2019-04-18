@@ -33,7 +33,6 @@ VlnPlot(Pineal2_Day1, features = c("nCount_RNA","nFeature_RNA","percent.mito"), 
 Filter cells, cutoffs based on QC plots. 
 ```{r Filter by nGene/nUMI, results="hold"}
 FeatureScatter(Pineal2_Day1, "nCount_RNA","nFeature_RNA")
-Pineal2_Day1 <- SubsetData(Pineal2_Day1, subset.names = "nCount_RNA", high.thresholds = 25000)
 Pineal2_Day1 <- subset(Pineal2_Day1, subset = nCount_RNA < 25000)
 FeatureScatter(Pineal2_Day1, "nCount_RNA","nFeature_RNA")
 VlnPlot(Pineal2_Day1, features = c("nCount_RNA","nFeature_RNA","percent.mito"), ncol=3, group.by = "orig.ident", pt.size = 0)

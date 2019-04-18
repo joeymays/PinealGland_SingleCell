@@ -13,77 +13,80 @@ output:
   pdf_document: default
 ---
 
-Two Day Samples, 10X Genomics 3'; Seurat v2.2.0
+Two Day Samples, 10X Genomics 3'; Seurat v3.0.0
 
 # Setup
 ## Merge Original Seurat Objects
 ```{r Pineal2_Day1n2 Merge, message=FALSE, warning=FALSE, results='hide'}
-Pineal2_Day1n2 <- MergeSeurat(Pineal2_Day1, Pineal2_Day2, project = "Pineal2_Day1n2", add.cell.id1 = "D1", add.cell.id2 = "D2")
+Pineal2_Day1n2 <- merge(Pineal2_Day1, Pineal2_Day2, project = "Pineal2_Day1n2", add.cell.ids = c("D1","D2"), merge.data = T)
 #Doublets previously identified are removed here 
 load("./R_Objects/master.doublets.day.Robj")
 Pineal2_Day1n2@meta.data$treatment <- "Day"
-Pineal2_Day1n2 <- SubsetData(Pineal2_Day1n2, cells.use = setdiff(colnames(Pineal2_Day1n2@data), master.doublets.day))
-Pineal2_Day1n2 <- ScaleData(Pineal2_Day1n2, display.progress = F)
+Pineal2_Day1n2 <- subset(Pineal2_Day1n2, cells = setdiff(colnames(GetAssayData(Pineal2_Day1n2)), master.doublets.day))
+Pineal2_Day1n2 <- ScaleData(Pineal2_Day1n2, verbose = F)
 ```
 
 ## QC Stats
 ```{r QC stats}
 Pineal2_Day1n2
-GenePlot(Pineal2_Day1n2, "nUMI","nGene")
-VlnPlot(Pineal2_Day1n2, c("nUMI","nGene","percent.mito"),nCol=3, group.by = "orig.ident", x.lab.rot = T, size.x.use = 12)
+FeatureScatter(Pineal2_Day1, "nCount_RNA","nFeature_RNA")
+VlnPlot(Pineal2_Day1n2, features = c("nCount_RNA","nFeature_RNA","percent.mito"), ncol=3, group.by = "orig.ident", pt.size = 0)
 ```
 # Dimensional Reduction - All Cells
 ## Identify Highly Variable Genes
 ```{r Find Variable Genes, message=FALSE, results='hide'}
-Pineal2_Day1n2 <- FindVariableGenes(Pineal2_Day1n2, x.low.cutoff = 0.0125, x.high.cutoff = 3, y.cutoff = 0.3, do.plot = F)
-print(paste(length(Pineal2_Day1n2@var.genes), " variable genes selected.", sep=""))
+Pineal2_Day1n2 <- FindVariableFeatures(Pineal2_Day1n2, selection.method = "mean.var.plot", mean.cutoff = c(0.0125,3), dispersion.cutoff = c(0.3,Inf), verbose = F, do.plot = F)
+print(paste(length(VariableFeatures(Pineal2_Day1n2)), " variable genes selected.", sep=""))
 ```
 
 ## Principal Components Analysis 
 ```{r PCA I, message=FALSE, warning=FALSE}
-Pineal2_Day1n2 <- RunPCA(Pineal2_Day1n2, pc.genes = Pineal2_Day1n2@var.genes, pcs.compute = 40, do.print = F)
-Pineal2_Day1n2 <- ProjectPCA(Pineal2_Day1n2, do.print = F)
+Pineal2_Day1n2 <- RunPCA(Pineal2_Day1n2, npcs = 40, verbose = F)
+Pineal2_Day1n2 <- ProjectDim(Pineal2_Day1n2, verbose = F)
 ```
 ```{r PCA Plot I, message=FALSE, warning=FALSE}
 PCAPlot(Pineal2_Day1n2, no.legend = T)
-PCElbowPlot(Pineal2_Day1n2, num.pc = 40)
-PCHeatmap(Pineal2_Day1n2, pc.use = 1:6, cells.use = 200, num.genes = 25, do.balanced = F)
-PCHeatmap(Pineal2_Day1n2, pc.use = 7:12, cells.use = 150, num.genes = 25, do.balanced = T)
-PCHeatmap(Pineal2_Day1n2, pc.use = 13:18, cells.use = 150, num.genes = 25, do.balanced = T)
+ElbowPlot(Pineal2_Day1n2, ndims = 40)
+DimHeatmap(Pineal2_Day1n2, dims = 1:6)
+DimHeatmap(Pineal2_Day1n2, dims = 7:12, balanced = T)
+DimHeatmap(Pineal2_Day1n2, dims = 13:18, balanced = T)
 ```
 ## tSNE Projection
 ```{r Clustering, echo=TRUE, message=FALSE, warning=FALSE}
 cluster.dims <- c(1:13)
 cluster.res <- 1.5
-Pineal2_Day1n2 <- FindClusters(Pineal2_Day1n2, dims.use = cluster.dims, reduction.type = "pca", resolution = cluster.res, print.output = F, save.SNN = T)
+
+Pineal2_Day1n2 <- FindNeighbors(Pineal2_Day1n2, dims = cluster.dims, reduction = "pca", do.plot = F)
+Pineal2_Day1n2 <- FindClusters(Pineal2_Day1n2, resolution = cluster.res, verbose = F)
 ```
 
 ```{r Generate TSNE, echo=TRUE, message=FALSE, warning=FALSE}
-Pineal2_Day1n2 <- RunTSNE(Pineal2_Day1n2, dims.use = cluster.dims, do.fast = T)
+Pineal2_Day1n2 <- RunTSNE(Pineal2_Day1n2, dims = cluster.dims)
 ```
 
 ```{r plot TSNE, message=FALSE, results = 'hide'}
-Pineal2_Day1n2 <- BuildClusterTree(Pineal2_Day1n2, genes.use = Pineal2_Day1n2@var.genes, do.plot = T, do.reorder = T, reorder.numeric = T)
+Pineal2_Day1n2 <- BuildClusterTree(Pineal2_Day1n2, reorder = F, reorder.numeric = F)
+PlotClusterTree(Pineal2_Day1n2)
 TSNEPlot(Pineal2_Day1n2, do.label = T, do.return = T) + ggtitle(paste("Day1n2, PCs ", cluster.dims[1],"-",length(cluster.dims),", res = ", cluster.res, sep=''))
 TSNEPlot(Pineal2_Day1n2, do.label = T, group.by = "orig.ident", do.return = T)
-FeaturePlot(Pineal2_Day1n2, "nUMI", cols.use = c("light grey","red"))
-FeaturePlot(Pineal2_Day1n2, "nGene", cols.use = c("light grey","red"))
+FeaturePlot(Pineal2_Day1, "nCount_RNA", cols = c("light grey","blue"))
+FeaturePlot(Pineal2_Day1, "nFeature_RNA", cols = c("light grey","blue"))
 ```
 ## Cluster Identification by Markers
 ```{r Markers}
-FeaturePlot(Pineal2_Day1n2, c("Tph1","Asmt","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb"), cols.use=c("light grey","red"))
-DotPlot(object = Pineal2_Day1n2, genes.plot = c("Tph1","Asmt","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb", "S100b"))
+FeaturePlot(Pineal2_Day1n2, c("Tph1","Asmt","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb"), cols=c("light grey","red"))
+DotPlot(object = Pineal2_Day1n2,features = c("Tph1","Asmt","Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb", "S100b"))+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 ### Rename Clusters
 ```{r Cluster Rename}
-Pineal2_Day1n2 <- RenameIdent(Pineal2_Day1n2, old.ident.name = 3, new.ident.name = "Penk 1")
-Pineal2_Day1n2 <- RenameIdent(Pineal2_Day1n2, old.ident.name = 4, new.ident.name = "Penk 2")
-Pineal2_Day1n2 <- RenameIdent(Pineal2_Day1n2, old.ident.name = 2, new.ident.name = "Penk 3")
-Pineal2_Day1n2 <- RenameIdent(Pineal2_Day1n2, old.ident.name = 5, new.ident.name = "Lum")
-Pineal2_Day1n2 <- RenameIdent(Pineal2_Day1n2, old.ident.name = 1, new.ident.name = "Lyz2")
-Pineal2_Day1n2 <- RenameIdent(Pineal2_Day1n2, old.ident.name = 6, new.ident.name = "High_Asmt_Tph1")
-Pineal2_Day1n2 <- MergeNode(Pineal2_Day1n2, 24)
-Pineal2_Day1n2 <- RenameIdent(Pineal2_Day1n2, old.ident.name = 10, new.ident.name = "Tph1")
+Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "8" = "Penk 1")
+Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "17" = "Penk 2")
+Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "16" = "Penk 3")
+Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "14" = "Lum")
+Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "15" = "Lyz2")
+Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "18" = "Lyz2")
+Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "13" = "High_Asmt_Tph1")
+Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, '0' = "Tph1", '1' = "Tph1", '2' = "Tph1", '3' = "Tph1", '4' = "Tph1", '5' = "Tph1", '6' = "Tph1", '7' = "Tph1", '9' = "Tph1", '10' = "Tph1",'11' = "Tph1", '12' = "Tph1")
 TSNEPlot(Pineal2_Day1n2, do.label = T, do.return = T)
 ```
 
