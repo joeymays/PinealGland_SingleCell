@@ -1,6 +1,9 @@
 # PinealGland_SingleCell
 Codebook for Mays et al., 2018 (PLOS ONE). 
 
+***This version has updated commands for doing the analysis in Seurat v3.0.0. Despite slight differences in the details of the analysis and results of intermediate steps, the goal is for the end result to be the same as in the published work.***
+As it stands, there is one discrepency. **Cell D2_ATAAGAGTCGCATGAT** appears as an alpha-astrocyte in one version and a beta-astrocyte in the other version. 
+
 # Study 
 Single-cell RNA sequencing of the mammalian pineal gland identifies two pinealocyte subtypes and cell type-specific daily patterns of gene expression
 

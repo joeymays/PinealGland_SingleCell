@@ -67,8 +67,8 @@ Pineal2_Day1n2 <- RunTSNE(Pineal2_Day1n2, dims = cluster.dims)
 ```{r plot TSNE, message=FALSE, results = 'hide'}
 Pineal2_Day1n2 <- BuildClusterTree(Pineal2_Day1n2, reorder = F, reorder.numeric = F)
 PlotClusterTree(Pineal2_Day1n2)
-TSNEPlot(Pineal2_Day1n2, do.label = T, do.return = T) + ggtitle(paste("Day1n2, PCs ", cluster.dims[1],"-",length(cluster.dims),", res = ", cluster.res, sep=''))
-TSNEPlot(Pineal2_Day1n2, do.label = T, group.by = "orig.ident", do.return = T)
+TSNEPlot(Pineal2_Day1n2, label = T, repel= T) + ggtitle(paste("Day1n2, PCs ", cluster.dims[1],"-",length(cluster.dims),", res = ", cluster.res, sep=''))
+TSNEPlot(Pineal2_Day1n2, label = T, group.by = "orig.ident", repel = T)
 FeaturePlot(Pineal2_Day1, "nCount_RNA", cols = c("light grey","blue"))
 FeaturePlot(Pineal2_Day1, "nFeature_RNA", cols = c("light grey","blue"))
 ```
@@ -87,81 +87,84 @@ Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "15" = "Lyz2")
 Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "18" = "Lyz2")
 Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "13" = "High_Asmt_Tph1")
 Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, '0' = "Tph1", '1' = "Tph1", '2' = "Tph1", '3' = "Tph1", '4' = "Tph1", '5' = "Tph1", '6' = "Tph1", '7' = "Tph1", '9' = "Tph1", '10' = "Tph1",'11' = "Tph1", '12' = "Tph1")
-TSNEPlot(Pineal2_Day1n2, do.label = T, do.return = T)
+TSNEPlot(Pineal2_Day1n2, label = T, repel = T)
 ```
 
 # Dimensional Reduction - Non-Pinealocytes
 Non-Pinealocytes were analyized separately to resolve cell subtypes.
 ```{r Non-Pinealocyte}
-Pineal2_Day1n2 <- StashIdent(Pineal2_Day1n2, "major.types")
-Pineal2_Day1n2_NonP <- SubsetData(Pineal2_Day1n2, ident.remove = c("Tph1", "High_Asmt_Tph1"))
-TSNEPlot(Pineal2_Day1n2_NonP, do.label = T, do.return = T)
+Pineal2_Day1n2[["major.types"]] <- Idents(object = Pineal2_Day1n2)
+Pineal2_Day1n2_NonP <- subset(Pineal2_Day1n2, idents = c("Tph1", "High_Asmt_Tph1"), invert = T)
+TSNEPlot(Pineal2_Day1n2_NonP, label = T, repel = T)
 ```
 ## Identify Highly Variable Genes
 ```{r Find Variable Genes II, message=FALSE, results='hide'}
-Pineal2_Day1n2_NonP <- FindVariableGenes(Pineal2_Day1n2_NonP, x.low.cutoff = 0.05, x.high.cutoff = 3, y.cutoff = 0.4, do.plot = F)
-print(paste(length(Pineal2_Day1n2_NonP@var.genes), " variable genes selected.", sep=""))
+Pineal2_Day1n2_NonP <- FindVariableFeatures(Pineal2_Day1n2_NonP,selection.method = "mean.var.plot", mean.cutoff = c(0.05,3), dispersion.cutoff = c(0.4,Inf), verbose = F, do.plot = F)
+print(paste(length(VariableFeatures(Pineal2_Day1n2_NonP)), " variable genes selected.", sep=""))
 ```
 
 ## Principal Components Analysis
 ```{r PCA II, message=FALSE, warning=FALSE}
-Pineal2_Day1n2_NonP <- RunPCA(Pineal2_Day1n2_NonP, pc.genes = Pineal2_Day1n2_NonP@var.genes, pcs.compute = 40, do.print = F)
-Pineal2_Day1n2_NonP <- ProjectPCA(Pineal2_Day1n2_NonP, do.print = F)
+Pineal2_Day1n2_NonP <- RunPCA(Pineal2_Day1n2_NonP, npcs = 40, verbose = F)
+Pineal2_Day1n2_NonP <- ProjectDim(Pineal2_Day1n2_NonP, verbose = F)
 ```
 ```{r PCA Plot II, message=FALSE, warning=FALSE}
 PCAPlot(Pineal2_Day1n2_NonP, no.legend = T)
-PCElbowPlot(Pineal2_Day1n2_NonP, num.pc = 40)
-PCHeatmap(Pineal2_Day1n2_NonP, pc.use = 1:6, cells.use = 200, num.genes = 25, do.balanced = F)
-PCHeatmap(Pineal2_Day1n2_NonP, pc.use = 7:12, cells.use = 150, num.genes = 25, do.balanced = T)
+ElbowPlot(Pineal2_Day1n2_NonP, ndims = 40)
+DimHeatmap(Pineal2_Day1n2_NonP, dims = 1:6)
+DimHeatmap(Pineal2_Day1n2_NonP, dims = 7:12, balanced = T)
 ```
 
 ## tSNE Projection
 ```{r Clustering II, echo=TRUE, message=FALSE, warning=FALSE}
 cluster.dims <- c(1:10)
 cluster.res <- 0.6
-Pineal2_Day1n2_NonP <- FindClusters(Pineal2_Day1n2_NonP, dims.use = cluster.dims, reduction.type = "pca", resolution = cluster.res, print.output = F, save.SNN = T)
+
+Pineal2_Day1n2_NonP <- FindNeighbors(Pineal2_Day1n2_NonP, dims = cluster.dims, reduction = "pca", do.plot = F)
+Pineal2_Day1n2_NonP <- FindClusters(Pineal2_Day1n2_NonP, resolution = cluster.res, verbose = F)
 ```
 
 ```{r Generate TSNE II, echo=TRUE, message=FALSE, warning=FALSE}
-Pineal2_Day1n2_NonP <- RunTSNE(Pineal2_Day1n2_NonP, dims.use = cluster.dims, do.fast = T)
+Pineal2_Day1n2_NonP <- RunTSNE(Pineal2_Day1n2_NonP, dims = cluster.dims)
 ```
 
 ```{r Plot TSNE II, echo=TRUE, message=FALSE}
-Pineal2_Day1n2_NonP <- BuildClusterTree(Pineal2_Day1n2_NonP, genes.use = Pineal2_Day1n2_NonP@var.genes, do.plot = T, do.reorder = T, reorder.numeric = T)
-TSNEPlot(Pineal2_Day1n2_NonP, do.label = T, do.return = T) + 
-  ggtitle(paste("Day1n2 - Non-pinealocytes, PCs ", cluster.dims[1],"-",length(cluster.dims),", res = ", cluster.res, sep=''))
-TSNEPlot(Pineal2_Day1n2_NonP, do.label = F, group.by = "orig.ident")
-TSNEPlot(Pineal2_Day1n2_NonP, do.label = T, group.by = "major.types")
+Pineal2_Day1n2_NonP <- BuildClusterTree(Pineal2_Day1n2_NonP, reorder = F, reorder.numeric = F)
+PlotClusterTree(Pineal2_Day1n2_NonP)
+TSNEPlot(Pineal2_Day1n2_NonP, label = T, repel= T) + ggtitle(paste("Day1n2 - Non-pinealocytes, PCs ", cluster.dims[1],"-",length(cluster.dims),", res = ", cluster.res, sep=''))
+TSNEPlot(Pineal2_Day1n2_NonP, label = T, group.by = "orig.ident", repel = T)
+TSNEPlot(Pineal2_Day1n2_NonP, label = T, group.by = "major.types", repel = T)
 ```
 
 ## Cluster Identification by Markers
 ```{r Markers II}
-FeaturePlot(Pineal2_Day1n2_NonP, c("Esm1","Apoe","Penk","Lum","Vwf","Lyz2","C1qa","RT1-Bb"), cols.use=c("light grey","red"))
-DotPlot(object = Pineal2_Day1n2_NonP, genes.plot = c("Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb", "S100b"))
+FeaturePlot(Pineal2_Day1n2_NonP, c("Esm1","Apoe","Penk","Lum","Vwf","Lyz2","C1qa","RT1-Bb"), cols=c("light grey","red"))
+DotPlot(object = Pineal2_Day1n2_NonP, features = c("Esm1","Apoe","Penk","Lum","Vwf","Sparcl1","Lyz2","C1qa","RT1-Bb", "S100b"))+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 ### Rename Clusters
 ```{r Cluster Rename II}
-Pineal2_Day1n2_NonP <- RenameIdent(Pineal2_Day1n2_NonP, old.ident.name = 2, new.ident.name = "C1qa")
-Pineal2_Day1n2_NonP <- RenameIdent(Pineal2_Day1n2_NonP, old.ident.name = 1, new.ident.name = "RT1-Bb")
-Pineal2_Day1n2_NonP <- RenameIdent(Pineal2_Day1n2_NonP, old.ident.name = 4, new.ident.name = "Lum")
-Pineal2_Day1n2_NonP <- MergeNode(Pineal2_Day1n2_NonP, 13)
-Pineal2_Day1n2_NonP <- RenameIdent(Pineal2_Day1n2_NonP, old.ident.name = 5, new.ident.name = "Penk 2")
-Pineal2_Day1n2_NonP <- RenameIdent(Pineal2_Day1n2_NonP, old.ident.name = 3, new.ident.name = "Penk 3")
-Pineal2_Day1n2_NonP <- RenameIdent(Pineal2_Day1n2_NonP, old.ident.name = 6, new.ident.name = "Penk 1")
+Pineal2_Day1n2_NonP <- RenameIdents(Pineal2_Day1n2_NonP, "2" = "Lum")
+Pineal2_Day1n2_NonP <- RenameIdents(Pineal2_Day1n2_NonP, "5" = "Penk 3")
+Pineal2_Day1n2_NonP <- RenameIdents(Pineal2_Day1n2_NonP, "6" = "Penk 2")
+Pineal2_Day1n2_NonP <- RenameIdents(Pineal2_Day1n2_NonP, "0" = "Penk 1")
+Pineal2_Day1n2_NonP <- RenameIdents(Pineal2_Day1n2_NonP, "1" = "Penk 1")
+Pineal2_Day1n2_NonP <- RenameIdents(Pineal2_Day1n2_NonP, "3" = "Penk 1")
+Pineal2_Day1n2_NonP <- RenameIdents(Pineal2_Day1n2_NonP, "4" = "C1qa")
+Pineal2_Day1n2_NonP <- RenameIdents(Pineal2_Day1n2_NonP, "7" = "RT1-Bb")
 #Vwf+ cells isolated manually from the Lum+ group
 load("./R_Objects/Vwf.Day.Robj")
-Pineal2_Day1n2_NonP <- SetIdent(Pineal2_Day1n2_NonP, cells.use = Vwf.Day, ident.use = "Vwf")
-TSNEPlot(Pineal2_Day1n2_NonP, do.label = T, do.return = T)
+Pineal2_Day1n2_NonP <- SetIdent(Pineal2_Day1n2_NonP, cells = Vwf.Day, value = "Vwf")
+TSNEPlot(Pineal2_Day1n2_NonP, label = T, repel = T)
 ```
 
 #Remap Clusters
 ```{r Cluster Rename III}
-Pineal2_Day1n2 <- SetIdent(Pineal2_Day1n2, cells.use = WhichCells(Pineal2_Day1n2_NonP, ident = "RT1-Bb"), ident.use = "RT1-Bb")
-Pineal2_Day1n2 <- SetIdent(Pineal2_Day1n2, cells.use = WhichCells(Pineal2_Day1n2_NonP, ident = "C1qa"), ident.use = "C1qa")
-Pineal2_Day1n2 <- SetIdent(Pineal2_Day1n2, cells.use = WhichCells(Pineal2_Day1n2_NonP, ident = "Vwf"), ident.use = "Vwf")
-Pineal2_Day1n2@ident = factor(Pineal2_Day1n2@ident,levels(Pineal2_Day1n2@ident)[c(2,8,4,5,6,1,7,3,9)])
-TSNEPlot(Pineal2_Day1n2, do.label = T, do.return = T)
+Pineal2_Day1n2 <- SetIdent(Pineal2_Day1n2, cells = WhichCells(Pineal2_Day1n2_NonP, idents = "RT1-Bb"), value = "RT1-Bb")
+Pineal2_Day1n2 <- SetIdent(Pineal2_Day1n2, cells = WhichCells(Pineal2_Day1n2_NonP, idents = "C1qa"), value = "C1qa")
+Pineal2_Day1n2 <- SetIdent(Pineal2_Day1n2, cells = WhichCells(Pineal2_Day1n2_NonP, idents = "Vwf"), value = "Vwf")
+Idents(Pineal2_Day1n2) = factor(Idents(Pineal2_Day1n2),levels(Idents(Pineal2_Day1n2))[c(5,4,9,8,7,2,3,6,1)])
+TSNEPlot(Pineal2_Day1n2, label = T, repel = T)
 ```
 
 ```{r}
