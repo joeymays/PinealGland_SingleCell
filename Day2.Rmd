@@ -53,7 +53,7 @@ Pineal2_Day2 <- RunPCA(Pineal2_Day2, npcs = 40, verbose = F)
 Pineal2_Day2 <- ProjectDim(Pineal2_Day2, verbose = F)
 ```
 ```{r PCA Plot I, echo=TRUE, message=FALSE, warning=FALSE}
-PCAPlot(Pineal2_Day2, no.legend = T)
+DimPlot(Pineal2_Day2, reduction = 'pca')
 ElbowPlot(Pineal2_Day2, ndims = 40)
 DimHeatmap(Pineal2_Day2, dims = 1:6)
 DimHeatmap(Pineal2_Day2, dims = 7:12, balanced = T)
@@ -73,7 +73,7 @@ Pineal2_Day2 <- RunTSNE(Pineal2_Day2, dims = 1:12)
 ```{r Plot TSNE, echo=TRUE, message=FALSE, warning=FALSE, results="hide"}
 Pineal2_Day2 <- BuildClusterTree(Pineal2_Day2, reorder = T, reorder.numeric = T)
 PlotClusterTree(Pineal2_Day2)
-TSNEPlot(Pineal2_Day2, do.label = T, do.return = T) + ggtitle("PCs 1-12, 1.5 res")
+DimPlot(Pineal2_Day2, reduction = 'tsne', label = T)+ ggtitle("PCs 1-12, 1.5 res")
 FeaturePlot(Pineal2_Day2, "nCount_RNA", cols = c("light grey","red"))
 FeaturePlot(Pineal2_Day2, "nFeature_RNA", cols = c("light grey","red"))
 ```

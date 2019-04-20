@@ -45,7 +45,7 @@ Pineal2_Day1n2 <- RunPCA(Pineal2_Day1n2, npcs = 40, verbose = F)
 Pineal2_Day1n2 <- ProjectDim(Pineal2_Day1n2, verbose = F)
 ```
 ```{r PCA Plot I, message=FALSE, warning=FALSE}
-PCAPlot(Pineal2_Day1n2, no.legend = T)
+DimPlot(Pineal2_Day1n2, reduction = 'pca')
 ElbowPlot(Pineal2_Day1n2, ndims = 40)
 DimHeatmap(Pineal2_Day1n2, dims = 1:6)
 DimHeatmap(Pineal2_Day1n2, dims = 7:12, balanced = T)
@@ -67,8 +67,8 @@ Pineal2_Day1n2 <- RunTSNE(Pineal2_Day1n2, dims = cluster.dims)
 ```{r plot TSNE, message=FALSE, results = 'hide'}
 Pineal2_Day1n2 <- BuildClusterTree(Pineal2_Day1n2, reorder = F, reorder.numeric = F)
 PlotClusterTree(Pineal2_Day1n2)
-TSNEPlot(Pineal2_Day1n2, label = T, repel= T) + ggtitle(paste("Day1n2, PCs ", cluster.dims[1],"-",length(cluster.dims),", res = ", cluster.res, sep=''))
-TSNEPlot(Pineal2_Day1n2, label = T, group.by = "orig.ident", repel = T)
+DimPlot(Pineal2_Day1n2, reduction = 'tsne', label = T, repel = T)+ ggtitle(paste("Day1n2, PCs ", cluster.dims[1],"-",length(cluster.dims),", res = ", cluster.res, sep=''))
+DimPlot(Pineal2_Day1n2, reduction = 'tsne', label = T, group.by = "orig.ident", repel = T)
 FeaturePlot(Pineal2_Day1, "nCount_RNA", cols = c("light grey","blue"))
 FeaturePlot(Pineal2_Day1, "nFeature_RNA", cols = c("light grey","blue"))
 ```
@@ -87,7 +87,7 @@ Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "15" = "Lyz2")
 Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "18" = "Lyz2")
 Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, "13" = "High_Asmt_Tph1")
 Pineal2_Day1n2 <- RenameIdents(Pineal2_Day1n2, '0' = "Tph1", '1' = "Tph1", '2' = "Tph1", '3' = "Tph1", '4' = "Tph1", '5' = "Tph1", '6' = "Tph1", '7' = "Tph1", '9' = "Tph1", '10' = "Tph1",'11' = "Tph1", '12' = "Tph1")
-TSNEPlot(Pineal2_Day1n2, label = T, repel = T)
+DimPlot(Pineal2_Day1n2, reduction = 'tsne', label = T, repel = T)
 ```
 
 # Dimensional Reduction - Non-Pinealocytes
@@ -95,7 +95,7 @@ Non-Pinealocytes were analyized separately to resolve cell subtypes.
 ```{r Non-Pinealocyte}
 Pineal2_Day1n2[["major.types"]] <- Idents(object = Pineal2_Day1n2)
 Pineal2_Day1n2_NonP <- subset(Pineal2_Day1n2, idents = c("Tph1", "High_Asmt_Tph1"), invert = T)
-TSNEPlot(Pineal2_Day1n2_NonP, label = T, repel = T)
+DimPlot(Pineal2_Day1n2_NonP, reduction = 'tsne', label = T, repel = T)
 ```
 ## Identify Highly Variable Genes
 ```{r Find Variable Genes II, message=FALSE, results='hide'}
@@ -109,7 +109,7 @@ Pineal2_Day1n2_NonP <- RunPCA(Pineal2_Day1n2_NonP, npcs = 40, verbose = F)
 Pineal2_Day1n2_NonP <- ProjectDim(Pineal2_Day1n2_NonP, verbose = F)
 ```
 ```{r PCA Plot II, message=FALSE, warning=FALSE}
-PCAPlot(Pineal2_Day1n2_NonP, no.legend = T)
+DimPlot(Pineal2_Day1n2_NonP, reduction = 'pca')
 ElbowPlot(Pineal2_Day1n2_NonP, ndims = 40)
 DimHeatmap(Pineal2_Day1n2_NonP, dims = 1:6)
 DimHeatmap(Pineal2_Day1n2_NonP, dims = 7:12, balanced = T)
@@ -131,9 +131,9 @@ Pineal2_Day1n2_NonP <- RunTSNE(Pineal2_Day1n2_NonP, dims = cluster.dims)
 ```{r Plot TSNE II, echo=TRUE, message=FALSE}
 Pineal2_Day1n2_NonP <- BuildClusterTree(Pineal2_Day1n2_NonP, reorder = F, reorder.numeric = F)
 PlotClusterTree(Pineal2_Day1n2_NonP)
-TSNEPlot(Pineal2_Day1n2_NonP, label = T, repel= T) + ggtitle(paste("Day1n2 - Non-pinealocytes, PCs ", cluster.dims[1],"-",length(cluster.dims),", res = ", cluster.res, sep=''))
-TSNEPlot(Pineal2_Day1n2_NonP, label = T, group.by = "orig.ident", repel = T)
-TSNEPlot(Pineal2_Day1n2_NonP, label = T, group.by = "major.types", repel = T)
+DimPlot(Pineal2_Day1n2_NonP, reduction = 'tsne', label = T, repel= T) + ggtitle(paste("Day1n2 - Non-pinealocytes, PCs ", cluster.dims[1],"-",length(cluster.dims),", res = ", cluster.res, sep=''))
+DimPlot(Pineal2_Day1n2_NonP, reduction = 'tsne', label = T, group.by = "orig.ident", repel = T)
+DimPlot(Pineal2_Day1n2_NonP, reduction = 'tsne', label = T, group.by = "major.types", repel = T)
 ```
 
 ## Cluster Identification by Markers
@@ -155,7 +155,7 @@ Pineal2_Day1n2_NonP <- RenameIdents(Pineal2_Day1n2_NonP, "7" = "RT1-Bb")
 #Vwf+ cells isolated manually from the Lum+ group
 load("./R_Objects/Vwf.Day.Robj")
 Pineal2_Day1n2_NonP <- SetIdent(Pineal2_Day1n2_NonP, cells = Vwf.Day, value = "Vwf")
-TSNEPlot(Pineal2_Day1n2_NonP, label = T, repel = T)
+DimPlot(Pineal2_Day1n2_NonP, reduction = 'tsne', label = T, repel = T)
 ```
 
 #Remap Clusters
@@ -164,7 +164,7 @@ Pineal2_Day1n2 <- SetIdent(Pineal2_Day1n2, cells = WhichCells(Pineal2_Day1n2_Non
 Pineal2_Day1n2 <- SetIdent(Pineal2_Day1n2, cells = WhichCells(Pineal2_Day1n2_NonP, idents = "C1qa"), value = "C1qa")
 Pineal2_Day1n2 <- SetIdent(Pineal2_Day1n2, cells = WhichCells(Pineal2_Day1n2_NonP, idents = "Vwf"), value = "Vwf")
 Idents(Pineal2_Day1n2) = factor(Idents(Pineal2_Day1n2),levels(Idents(Pineal2_Day1n2))[c(5,4,9,8,7,2,3,6,1)])
-TSNEPlot(Pineal2_Day1n2, label = T, repel = T)
+DimPlot(Pineal2_Day1n2, reduction = 'tsne', label = T, repel = T)
 ```
 
 ```{r}

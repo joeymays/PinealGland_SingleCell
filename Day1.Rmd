@@ -51,12 +51,12 @@ print(paste(length(VariableFeatures(Pineal2_Day1)), " variable genes selected.",
 Pineal2_Day1 <- ScaleData(Pineal2_Day1,verbose = F)
 ```
 
-```{r PCA I, echo=FALSE, message=FALSE, warning=FALSE}
+```{r PCA I, echo=TRUE, message=FALSE, warning=FALSE}
 Pineal2_Day1 <- RunPCA(Pineal2_Day1, npcs = 40, verbose = F)
 Pineal2_Day1 <- ProjectDim(Pineal2_Day1, verbose = F)
 ```
 ```{r PCA Plot I, echo=TRUE, message=FALSE, warning=FALSE}
-PCAPlot(Pineal2_Day1, no.legend = T)
+DimPlot(Pineal2_Day1n2, reduction = 'pca')
 ElbowPlot(Pineal2_Day1, ndims = 40)
 DimHeatmap(Pineal2_Day1, dims = 1:6)
 DimHeatmap(Pineal2_Day1, dims = 7:12, balanced = T)
@@ -75,7 +75,7 @@ Pineal2_Day1 <- RunTSNE(Pineal2_Day1, dims = 1:16)
 ```{r Plot TSNE, echo=TRUE, message=FALSE, warning=FALSE}
 Pineal2_Day1 <- BuildClusterTree(Pineal2_Day1, reorder = T, reorder.numeric = T)
 PlotClusterTree(Pineal2_Day1)
-TSNEPlot(Pineal2_Day1, do.label = T, do.return = T) + ggtitle("PCs 1-16, 1.5 res")
+DimPlot(Pineal2_Day1, reduction = 'tsne', label = T)+ ggtitle("PCs 1-16, 1.5 res")
 FeaturePlot(Pineal2_Day1, "nCount_RNA", cols = c("light grey","red"))
 FeaturePlot(Pineal2_Day1, "nFeature_RNA", cols = c("light grey","red"))
 ```
