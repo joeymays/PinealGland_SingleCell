@@ -9,7 +9,7 @@ Single-cell RNA sequencing of the mammalian pineal gland identifies two pinealoc
 Mays JC, Kelly MC, Coon SL, Holtzclaw L, Rath MF, et al. (2018) Single-cell RNA sequencing of the mammalian pineal gland identifies two pinealocyte subtypes and cell type-specific daily patterns of gene expression. PLOS ONE 13(10): e0205883.
 
 # Running the Analysis Code
-Single-Cell RNA-Seq analysis was performed using [Seurat](github.com/satijalab/seurat) v2.2.0. 
+Single-Cell RNA-Seq analysis was performed using [Seurat](http://www.github.com/satijalab/seurat) v2.2.0. 
 Code should be run in the follow order:
 ## Setup
 `SetupDependencies.R` loads libraries, `MetadataInit.R` and `GenerateMarkerReport.R` load helper functions used in subsequent scripts.
