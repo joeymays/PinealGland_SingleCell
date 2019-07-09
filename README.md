@@ -1,4 +1,4 @@
-# PinealGland_SingleCell
+# Single-Cell RNA-Seq Analysis of the Pineal Gland
 Codebook for Mays et al., 2018 (PLOS ONE). 
 
 # Study 
